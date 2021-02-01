@@ -1,0 +1,10 @@
+# .npmignore
+# Mirrors .gitignore except for /dist/
+
+/node_modules/
+
+# Distribution files.
+# /dist/
+
+# Don't lock versions for a library.
+package-lock.json

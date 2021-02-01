@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+      crossorigin="anonymous"
+    />
+    <style>
+      .template {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="app" class="container">
+      <noscript>This example page requires JavaScript.</noscript>
+    </div>
+
+    <!-- Load Vue 3 to run examples. -->
+    <script src="https://unpkg.com/vue@3"></script>
+
+    <!-- Axios is a dependency and must be loaded before UK River Data. -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="../dist/uk-river-data.min.js"></script>
+
+    <!-- Vue application template -->
+    <div class="template" id="app-template">
+      <button class="btn btn-primary" @click="loadDistricts">
+        Load districts
+      </button>
+      <div class="list-group">
+        <a
+          v-for="district in districts"
+          href="#"
+          class="list-group-item list-group-item-action"
+          :class="district.id === districtId && 'active'"
+          @click="selectDistrict(district.id, $event)"
+        >
+          {{ district.name }}
+        </a>
+      </div>
+      <p>{{ version }} {{ districtId }}</p>
+    </div>
+
+    <!-- Vue application template -->
+    <script>
+      Vue.createApp({
+        template: '#app-template',
+        data() {
+          return {
+            version: UkRiverData.version,
+            districts: [],
+            districtId: null,
+          };
+        },
+        computed: {},
+
+        methods: {
+          selectDistrict(id) {
+            this.districtId = id;
+          },
+          async loadDistricts() {
+            this.districts = Object.values(
+              await new UkRiverData.RiverBasinDistrict().get()
+            );
+          },
+        },
+      }).mount('#app');
+    </script>
+  </body>
+</html>
