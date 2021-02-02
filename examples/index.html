@@ -31,21 +31,24 @@
 
     <!-- Vue application template -->
     <div class="template" id="app-template">
-      <button class="btn btn-primary" @click="loadDistricts">
-        Load districts
-      </button>
-      <div class="list-group">
-        <a
-          v-for="district in districts"
-          href="#"
-          class="list-group-item list-group-item-action"
-          :class="district.id === districtId && 'active'"
-          @click="selectDistrict(district.id, $event)"
-        >
-          {{ district.name }}
-        </a>
+      <div v-if="districtId !== null">{{ districts[districtId] }}</div>
+      <div v-else>
+        <button class="btn btn-primary" @click="loadDistricts">
+          Load districts
+        </button>
+        <div class="list-group">
+          <a
+            v-for="district in districts"
+            href="#"
+            class="list-group-item list-group-item-action"
+            :class="district.id === districtId && 'active'"
+            @click="selectDistrict(district.id, $event)"
+          >
+            {{ district.name }}
+          </a>
+        </div>
       </div>
-      <p>{{ version }} {{ districtId }}</p>
+      <p>{{ version }} {{ districtId }} {{ $route }}</p>
     </div>
 
     <!-- Vue application template -->
@@ -70,6 +73,9 @@
               await new UkRiverData.RiverBasinDistrict().get()
             );
           },
+        },
+        mounted() {
+          console.log(this.$route);
         },
       }).mount('#app');
     </script>
