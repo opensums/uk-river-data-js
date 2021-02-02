@@ -37,18 +37,29 @@ const DAY = 24 * 60 * 60000;
 "value": 4.716
 */
 
+const types = {
+  'flow-': 'flow',
+  'level-stage': 'level',
+  'level-downstage': 'downstreamLevel',
+  'level-tidal_level': 'tideLevel',
+};
+
+function getTypeFromMeasure(measure) {
+  const matches = measure.match(/[A-Za-z0-9]*-([A-Za-z]*-[A-Za-z]*)-.*-.*-.*$/);
+  return types[matches[1]] ?? measure;
+}
+
 class CurrentReadingsResponse {
   constructor(response) {
     this.response = response;
   }
 
   toTimeSeries() {
-    console.log(this.response.data);
     const mapIds = {};
     const timeSeries = {};
     this.response.data.items.forEach(({ measure, dateTime, value }) => {
       if (!mapIds[measure]) {
-        mapIds[measure] = measure;
+        mapIds[measure] = getTypeFromMeasure(measure);
         timeSeries[mapIds[measure]] = [];
       }
       timeSeries[mapIds[measure]].unshift([dateTime, value]);

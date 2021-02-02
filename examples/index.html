@@ -31,51 +31,61 @@
 
     <!-- Vue application template -->
     <div class="template" id="app-template">
-      <div v-if="districtId !== null">{{ districts[districtId] }}</div>
-      <div v-else>
-        <button class="btn btn-primary" @click="loadDistricts">
-          Load districts
+      <div>
+        <button class="btn btn-primary" @click="loadCurrent">
+          Load current data
         </button>
-        <div class="list-group">
-          <a
-            v-for="district in districts"
-            href="#"
-            class="list-group-item list-group-item-action"
-            :class="district.id === districtId && 'active'"
-            @click="selectDistrict(district.id, $event)"
-          >
-            {{ district.name }}
-          </a>
+
+        <div v-if="readings && readings.latest">
+
+        <h3>Latest</h3>
+        <p>Level {{ readings.latest.level[1] }} @{{ readings.latest.level[0] }}</p>
+        <p>Flow {{ readings.latest.flow[1] }} @{{ readings.latest.flow[0] }}</p>
         </div>
+
+        <h3>Flow</h3>
+        <ul class="list-group">
+          <li v-for="[time, value] in flow" class="list-group-item">
+            {{ time }} {{ value }}
+          </li>
+        </ul>
+        <h3>Level</h3>
+        <ul class="list-group">
+          <li v-for="[time, value] in level" class="list-group-item">
+            {{ time }} {{ value }}
+          </li>
+        </ul>
       </div>
-      <p>{{ version }} {{ districtId }} {{ $route }}</p>
+      <p>{{ version }}</p>
+      <pre>{{ readings }}</pre>
     </div>
 
     <!-- Vue application template -->
     <script>
+      const { createStationReadings } = UkRiverData;
       Vue.createApp({
         template: '#app-template',
         data() {
           return {
+            stationReference: '3400TH',
             version: UkRiverData.version,
-            districts: [],
-            districtId: null,
+            readings: null,
           };
         },
-        computed: {},
-
-        methods: {
-          selectDistrict(id) {
-            this.districtId = id;
-          },
-          async loadDistricts() {
-            this.districts = Object.values(
-              await new UkRiverData.RiverBasinDistrict().get()
-            );
-          },
+        computed: {
         },
+
         mounted() {
-          console.log(this.$route);
+            if (this.stationReference) {
+              this.readings = createStationReadings(this.stationReference);
+            }
+          },
+
+          methods: {
+          async loadCurrent() {
+            const latest = await this.readings.getLatest();
+            console.log(this.readings, latest);
+          },
         },
       }).mount('#app');
     </script>

@@ -1,8 +1,9 @@
-const { Station } = require('../dist/cjs');
+const { createStationReadings } = require('..');
 
-const station = new Station('3400TH');
+const readings = createStationReadings('3400TH');
 
-station.getCurrentReadings().then((readings) => {
-  console.log('Readings', readings.toTimeSeries());
+readings.getLatest().then((latest) => {
+  console.log('Readings', readings);
+  console.log('Latest', latest);
   // console.log('TimeSeries', readings.getTimeSeries());
 });
