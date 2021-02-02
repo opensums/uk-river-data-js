@@ -37,10 +37,13 @@
         </button>
 
         <div v-if="readings && readings.latest">
-
-        <h3>Latest</h3>
-        <p>Level {{ readings.latest.level[1] }} @{{ readings.latest.level[0] }}</p>
-        <p>Flow {{ readings.latest.flow[1] }} @{{ readings.latest.flow[0] }}</p>
+          <h3>Latest</h3>
+          <p>
+            Level {{ readings.latest.level[1] }} @{{ readings.latest.level[0] }}
+          </p>
+          <p>
+            Flow {{ readings.latest.flow[1] }} @{{ readings.latest.flow[0] }}
+          </p>
         </div>
 
         <h3>Flow</h3>
@@ -72,16 +75,15 @@
             readings: null,
           };
         },
-        computed: {
-        },
+        computed: {},
 
         mounted() {
-            if (this.stationReference) {
-              this.readings = createStationReadings(this.stationReference);
-            }
-          },
+          if (this.stationReference) {
+            this.readings = createStationReadings(this.stationReference);
+          }
+        },
 
-          methods: {
+        methods: {
           async loadCurrent() {
             const latest = await this.readings.getLatest();
             console.log(this.readings, latest);
