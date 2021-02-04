@@ -24,8 +24,9 @@
     "ci": "npm run lint && npm run build:build && npm run test:tests",
     "lint": "eslint . && prettier . --check",
     "lint:fix": "eslint . --fix && prettier . --write",
-    "test": "npm run build && npm run test:tests",
-    "test:tests": "jest test --verbose"
+    "test": "npm run build && npm run test:unit",
+    "test:functional": "jest test/functional --verbose",
+    "test:unit": "jest test/unit --verbose"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",

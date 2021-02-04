@@ -87,14 +87,19 @@ function mapMeasures(data, measures, measuresMap) {
 class StationReadings {
   constructor(stationReference, options = {}) {
     this.options = options;
+
     // Readings that can be measured for this station.
     this.measures = {};
+
     // Reverse map from measure URIs to keys in `this.measures`.
     this.measuresMap = {};
+
     // The reference for this station.
     this.stationReference = stationReference;
-    // Loaded data.
-    this.data = {};
+
+    // Loaded readings.
+    this.readings = {};
+
     // Latest readings.
     this.latest = null;
   }
@@ -134,7 +139,6 @@ class StationReadings {
       throw e;
     }
   }
-
   toTimeSeries() {
     const mapIds = {};
     const timeSeries = {};

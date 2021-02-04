@@ -32,6 +32,9 @@
     <!-- Vue application template -->
     <div class="template" id="app-template">
       <div>
+        <button class="btn btn-primary" @click="loadLatest">
+          Load latest data
+        </button>
         <button class="btn btn-primary" @click="loadCurrent">
           Load current data
         </button>
@@ -61,9 +64,25 @@
       </div>
       <p>{{ version }}</p>
       <pre>{{ readings }}</pre>
+
+      <!-- Acknowledgements -->
+      <footer class="footer bg-light">
+        <small>
+          Data provided by the
+          <a href="https://environment.data.gov.uk/" target="_blank"
+            >DEFRA Data Services Platform</a
+          >
+          and published under the
+          <a
+            href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+            target="_blank"
+            >Open Government License</a
+          >.
+        </small>
+      </footer>
     </div>
 
-    <!-- Vue application template -->
+    <!-- Vue application -->
     <script>
       const { createStationReadings } = UkRiverData;
       Vue.createApp({
@@ -85,8 +104,10 @@
 
         methods: {
           async loadCurrent() {
-            const latest = await this.readings.getLatest();
-            console.log(this.readings, latest);
+            await this.readings.getSince();
+          },
+          async loadLatest() {
+            await this.readings.getLatest();
           },
         },
       }).mount('#app');
