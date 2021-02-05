@@ -25,8 +25,12 @@
     <!-- Load Vue 3 to run examples. -->
     <script src="https://unpkg.com/vue@3"></script>
 
+    <!-- Load Chart.js and its dependencies for time series charts. -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2/dist/Chart.bundle.js"></script>
+
     <!-- Axios is a dependency and must be loaded before UK River Data. -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
     <script src="../dist/uk-river-data.min.js"></script>
 
     <!-- Vue application template -->
@@ -38,6 +42,8 @@
         <button class="btn btn-primary" @click="loadCurrent">
           Load current data
         </button>
+
+        <canvas ref="chartCanvas" style="height: 400px"></canvas>
 
         <div v-if="readings && readings.latest">
           <h3>Latest</h3>
@@ -89,12 +95,26 @@
         template: '#app-template',
         data() {
           return {
+            chartIsLoaded: false,
             stationReference: '3400TH',
             version: UkRiverData.version,
             readings: null,
           };
         },
-        computed: {},
+        computed: {
+          // Convert UKRiversData object to Chart.js x-y chart input.
+          chartData() {
+            return Object.entries(this.readings.readings).reduce((data, [label, seriesData]) => {
+                data[label] = {
+                  data: seriesData.map(([dateTime, value]) => ({
+                    x: new Date(dateTime),
+                    y: value,
+                  })),
+                };
+                return data;
+              }, {});
+          },
+        },
 
         mounted() {
           if (this.stationReference) {
@@ -105,9 +125,66 @@
         methods: {
           async loadCurrent() {
             await this.readings.getSince();
+            this.loadChart();
           },
+
           async loadLatest() {
             await this.readings.getLatest();
+          },
+
+          loadChart() {
+            if (this.chartIsLoaded) {
+              // Refresh.
+              return;
+            }
+            const data = this.chartData;
+
+            this.chart = new Chart(this.$refs.chartCanvas.getContext('2d'), {
+              type: 'scatter',
+              data: {
+                datasets: [
+                  {
+                    label: 'Level',
+                    yAxisID: 'level',
+                    data: this.chartData.level.data,
+                    showLine: true,
+                    borderWidth: 1,
+                  },
+                  {
+                    label: 'Flow',
+                    yAxisID: 'flow',
+                    data: this.chartData.flow.data,
+                    showLine: true,
+                    borderColor: 'green',
+                    borderWidth: 1,
+                    fill: false,
+                  },
+                ],
+              },
+              options: {
+                scales: {
+                  xAxes: [
+                    {
+                      type: 'time',
+                      time: {},
+                    },
+                  ],
+                  yAxes: [
+                    {
+                      id: 'flow',
+                      type: 'linear',
+                      position: 'left',
+                    },
+                    {
+                      id: 'level',
+                      type: 'linear',
+                      position: 'right',
+                    },
+                  ],
+                },
+              },
+            });
+            this.chartIsLoaded = true;
           },
         },
       }).mount('#app');

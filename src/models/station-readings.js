@@ -67,21 +67,39 @@ function getTypeFromMeasure(measure) {
 }
 
 // Map measure uris to friendly names.
-function mapMeasures(data, measures, measuresMap) {
+function mapLatestMeasures(data, measures, measuresMap) {
   return data.reduce((mapped, { dateTime, measure, value }) => {
-    if (!measuresMap[measure]) {
-      const type = getTypeFromMeasure(measure);
-      if (measures[type]) {
-        measures[measure] = { id: measure };
-        measuresMap[measure] = measure;
-      } else {
-        measures[type] = { id: measure };
-        measuresMap[measure] = type;
-      }
-    }
-    mapped[measuresMap[measure]] = [dateTime, value];
+    mapped[mapMeasure(measure, measures, measuresMap)] = [dateTime, value];
     return mapped;
   }, {});
+}
+
+function mapMeasure(measure, measures, measuresMap) {
+  // If the measure id has already been mapped, return it.
+  if (measuresMap[measure]) return measuresMap[measure];
+
+  const type = getTypeFromMeasure(measure);
+  if (measures[type]) {
+    measures[measure] = { id: measure };
+    measuresMap[measure] = measure;
+    return measure;
+  }
+  measures[type] = { id: measure };
+  measuresMap[measure] = type;
+  return type;
+}
+
+// Map measure uris to friendly names.
+function mapTimeSeriesMeasures(data, measures, measuresMap, readings = {}) {
+  return data.reduce((mapped, { dateTime, measure, value }) => {
+    const type = mapMeasure(measure, measures, measuresMap);
+    if (mapped[type]) {
+      mapped[type].unshift([dateTime, value]);
+      return mapped;
+    }
+    mapped[type] = [[dateTime, value]];
+    return mapped;
+  }, readings);
 }
 
 class StationReadings {
@@ -104,15 +122,22 @@ class StationReadings {
     this.latest = null;
   }
 
-  async getSince() {
+  async getSince(options = {}) {
     try {
       const since =
         new Date(Date.now() - DAY).toISOString().substring(0, 19) + 'Z';
-      return request({
+      const response = await (options.request || request)({
         path:
           `/flood-monitoring/id/stations/${this.stationReference}` +
           `/readings?since=${since}&_sorted`,
       });
+      mapTimeSeriesMeasures(
+        response.data.items,
+        this.measures,
+        this.measuresMap,
+        this.readings
+      );
+      return options.response ? [this.readings, response] : this.readings;
     } catch (err) {
       const e = new Error('Error requesting readings');
       e.error = err;
@@ -127,7 +152,7 @@ class StationReadings {
           `/flood-monitoring/id/stations/${this.stationReference}` +
           `/readings?latest`,
       });
-      this.latest = mapMeasures(
+      this.latest = mapLatestMeasures(
         response.data.items,
         this.measures,
         this.measuresMap
@@ -139,6 +164,7 @@ class StationReadings {
       throw e;
     }
   }
+
   toTimeSeries() {
     const mapIds = {};
     const timeSeries = {};
