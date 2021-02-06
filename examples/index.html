@@ -36,23 +36,24 @@
     <!-- Vue application template -->
     <div class="template" id="app-template">
       <div>
-        <button class="btn btn-primary" @click="loadLatest">
+        <button class="btn btn-secondary" @click="loadLatest">
           Load latest data
         </button>
-        <button class="btn btn-primary" @click="loadCurrent">
+        <button class="btn btn-secondary" @click="loadCurrent">
           Load current data
+        </button>
+        <button class="btn btn-secondary" @click="loadLatestFlow">
+          Load latest flow readings
         </button>
 
         <canvas ref="chartCanvas" style="height: 400px"></canvas>
 
-        <div v-if="readings && readings.latest">
+        <div v-if="station && station.latest">
           <h3>Latest</h3>
           <p>
-            Level {{ readings.latest.level[1] }} @{{ readings.latest.level[0] }}
+            Level {{ station.latest.level[1] }} @{{ station.latest.level[0] }}
           </p>
-          <p>
-            Flow {{ readings.latest.flow[1] }} @{{ readings.latest.flow[0] }}
-          </p>
+          <p>Flow {{ station.latest.flow[1] }} @{{ station.latest.flow[0] }}</p>
         </div>
 
         <h3>Flow</h3>
@@ -68,7 +69,12 @@
           </li>
         </ul>
       </div>
-      <p>{{ version }}</p>
+      <p>Version {{ version }}</p>
+
+      <h3>Station</h3>
+      <pre>{{ station }}</pre>
+
+      <h3>Readings</h3>
       <pre>{{ readings }}</pre>
 
       <!-- Acknowledgements -->
@@ -90,7 +96,7 @@
 
     <!-- Vue application -->
     <script>
-      const { createStation } = UkRiverData;
+      const { createReadings, createStation } = UkRiverData;
       Vue.createApp({
         template: '#app-template',
         data() {
@@ -99,12 +105,13 @@
             stationReference: '3400TH',
             version: UkRiverData.version,
             readings: null,
+            station: null,
           };
         },
         computed: {
           // Convert UKRiversData object to Chart.js x-y chart input.
           chartData() {
-            return Object.entries(this.readings.readings).reduce(
+            return Object.entries(this.station.readings).reduce(
               (data, [label, seriesData]) => {
                 data[label] = {
                   data: seriesData.map(([dateTime, value]) => ({
@@ -121,18 +128,25 @@
 
         mounted() {
           if (this.stationReference) {
-            this.readings = createStation(this.stationReference);
+            this.station = createStation(this.stationReference);
           }
         },
 
         methods: {
           async loadCurrent() {
-            await this.readings.getSince();
+            await this.station.getSince();
             this.loadChart();
           },
 
           async loadLatest() {
-            await this.readings.getLatest();
+            return this.station.getLatest();
+          },
+
+          async loadLatestFlow() {
+            this.readings = await createReadings({
+              stationReference: '3400TH',
+            });
+            this.readings.getLatest();
           },
 
           loadChart() {
