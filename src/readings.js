@@ -1,5 +1,5 @@
-// src/models/river-basin-district.js
-import { request } from '../api';
+// src/readings.js
+import { request } from './request';
 
 // -flow--i-15_min-m3_s"
 // -flow--Mean-15_min-m3_s
@@ -102,8 +102,8 @@ function mapTimeSeriesMeasures(data, measures, measuresMap, readings = {}) {
   }, readings);
 }
 
-class StationReadings {
-  constructor(stationReference, options = {}) {
+class Readings {
+  constructor(options = {}) {
     this.options = options;
 
     // Readings that can be measured for this station.
@@ -113,24 +113,34 @@ class StationReadings {
     this.measuresMap = {};
 
     // The reference for this station.
-    this.stationReference = stationReference;
+    this.stationReference = options.stationReference;
 
     // Loaded readings.
     this.readings = {};
 
     // Latest readings.
     this.latest = null;
+
+    // Flag for singleStation.
+    this.singleStation = false;
   }
 
   async getSince(options = {}) {
     try {
       const since =
         new Date(Date.now() - DAY).toISOString().substring(0, 19) + 'Z';
-      const response = await (options.request || request)({
-        path:
-          `/flood-monitoring/id/stations/${this.stationReference}` +
-          `/readings?since=${since}&_sorted`,
-      });
+      /*
+        new Date(Math.floor(Date.now() / DAY - 1) * DAY)
+          .toISOString().substring(0, 19) + 'Z';
+          */
+      const path = `/flood-monitoring/id/stations/${this.stationReference}/readings`;
+      const params = {
+        since,
+        _sorted: '',
+        _limit: 500,
+      };
+      const response = await (options.request || request)({ path, params });
+
       mapTimeSeriesMeasures(
         response.data.items,
         this.measures,
@@ -147,11 +157,9 @@ class StationReadings {
 
   async getLatest(options = {}) {
     try {
-      const response = await (options.request || request)({
-        path:
-          `/flood-monitoring/id/stations/${this.stationReference}` +
-          `/readings?latest`,
-      });
+      const path = `/flood-monitoring/id/stations/${this.stationReference}/readings`;
+      const params = { latest: '' };
+      const response = await (options.request || request)({ path, params });
       this.latest = mapLatestMeasures(
         response.data.items,
         this.measures,
@@ -164,18 +172,12 @@ class StationReadings {
       throw e;
     }
   }
+}
 
-  toTimeSeries() {
-    const mapIds = {};
-    const timeSeries = {};
-    this.response.data.items.forEach(({ measure, dateTime, value }) => {
-      if (!mapIds[measure]) {
-        mapIds[measure] = getTypeFromMeasure(measure);
-        timeSeries[mapIds[measure]] = [];
-      }
-      timeSeries[mapIds[measure]].unshift([dateTime, value]);
-    });
-    return timeSeries;
+class SingleStationReadings extends Readings {
+  constructor(stationReference, options = {}) {
+    super({ stationReference, ...options });
+    this.isSingle = true;
   }
 }
 
@@ -187,5 +189,10 @@ class StationReadings {
  * @return {StationReadings} An object for getting station readings.
  */
 export function createStationReadings(stationReference, options = {}) {
-  return new StationReadings(stationReference, options);
+  if (typeof stationReference === 'string') {
+    return new SingleStationReadings(stationReference, options);
+  }
+  // Called with only an options argument.
+  const optionsArg = stationReference;
+  return new Readings(optionsArg);
 }

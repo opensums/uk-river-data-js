@@ -90,7 +90,7 @@
 
     <!-- Vue application -->
     <script>
-      const { createStationReadings } = UkRiverData;
+      const { createStation } = UkRiverData;
       Vue.createApp({
         template: '#app-template',
         data() {
@@ -104,7 +104,8 @@
         computed: {
           // Convert UKRiversData object to Chart.js x-y chart input.
           chartData() {
-            return Object.entries(this.readings.readings).reduce((data, [label, seriesData]) => {
+            return Object.entries(this.readings.readings).reduce(
+              (data, [label, seriesData]) => {
                 data[label] = {
                   data: seriesData.map(([dateTime, value]) => ({
                     x: new Date(dateTime),
@@ -112,13 +113,15 @@
                   })),
                 };
                 return data;
-              }, {});
+              },
+              {}
+            );
           },
         },
 
         mounted() {
           if (this.stationReference) {
-            this.readings = createStationReadings(this.stationReference);
+            this.readings = createStation(this.stationReference);
           }
         },
 

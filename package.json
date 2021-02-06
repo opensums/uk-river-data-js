@@ -1,6 +1,6 @@
 {
   "name": "uk-river-data",
-  "version": "0.1.0-dev",
+  "version": "0.2.0-dev",
   "description": "Extract data for rivers in the UK from the Environment Agency API.",
   "keywords": [
     "flow",
@@ -25,7 +25,7 @@
     "lint": "eslint . && prettier . --check",
     "lint:fix": "eslint . --fix && prettier . --write",
     "test": "npm run build && npm run test:unit",
-    "test:functional": "jest test/functional --verbose",
+    "test:func": "jest test/functional --verbose",
     "test:unit": "jest test/unit --verbose"
   },
   "devDependencies": {

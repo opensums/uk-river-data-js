@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const api = axios.create({
+const baseRequest = axios.create({
   baseURL: 'https://environment.data.gov.uk',
   timeout: 5000,
   headers: {
@@ -13,5 +13,5 @@ export function request(options = {}) {
     options.url = options.path;
     delete options.path;
   }
-  return api(options);
+  return baseRequest(options);
 }

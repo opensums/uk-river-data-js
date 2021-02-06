@@ -1,5 +1,5 @@
 // src/models/river-basin-district.js
-import { request } from '../api';
+import { request } from './request';
 
 function transform(data) {
   return data.reduce((items, { notation: id, label: name }) => {

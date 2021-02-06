@@ -1,10 +1,10 @@
 // src/index.js
 
 import { version } from '../package.json';
-import RiverBasinDistrict from './models/river-basin-district';
+import RiverBasinDistrict from './river-basin-district';
 // import Station from './models/station';
 
-import { createStationReadings } from './models/station-readings';
+import { createStation } from './station';
 
 // export { version, RiverBasinDistrict, Station };
-export { version, createStationReadings, RiverBasinDistrict };
+export { version, createStation, RiverBasinDistrict };

@@ -1,4 +1,4 @@
-import { createStationReadings } from '../..';
+import { createStation } from '../../dist/cjs';
 
 let latest;
 
@@ -11,7 +11,7 @@ async function getLatest(readings) {
 
 describe('An object created by createCurrentReadings', () => {
   describe('the latest readings for a station', () => {
-    const readings = createStationReadings('3400TH');
+    const readings = createStation('3400TH');
 
     it('should be more than 1m and 50cumecs', async () => {
       const latest = await getLatest(readings);
