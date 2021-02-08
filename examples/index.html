@@ -144,7 +144,7 @@
 
           async loadLatestFlow() {
             this.readings = await createReadings({
-              stationReference: '3400TH',
+              parameter: 'flow',
             });
             this.readings.getLatest();
           },

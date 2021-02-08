@@ -3,13 +3,22 @@
 import { request } from './request';
 import { DAY, getTypeFromMeasure } from './helpers';
 
+/*
+"@id" : "http://environment.data.gov.uk/flood-monitoring/data/readings/F1906-flow-logged-i-15_min-m3_s/2021-02-07T22-30-00Z" ,
+"dateTime" : "2021-02-07T22:30:00Z" ,
+"measure" : "http://environment.data.gov.uk/flood-monitoring/id/measures/F1906-flow-logged-i-15_min-m3_s" ,
+"value" : 12.146
+*/
+
+function parseReadingsId(id) {
+  // /F1906-flow-logged-i-15_min-m3_s/2021-02-07T22-30-00Z
+  const [dateTime, measureId] = id.split('/').reverse();
+  const [stationReference, parameter, thing, period, interval, unit] = measureId.split('-');
+  return {dateTime, stationReference, parameter, thing, period, interval, unit};
+}
+
 // Map measure uris to friendly names.
-function mapLatestStationMeasures(
-  data,
-  measures,
-  measuresMap,
-  stationReference
-) {
+function mapLatestMeasures(data, measures, measuresMap) {
   const obj = {};
   obj[stationReference] = {};
   return data.reduce((mapped, { dateTime, measure, value }) => {
@@ -55,6 +64,11 @@ class Readings {
     if (options.stationReference) {
       this.selectionType = 'stationReference';
       this.selectionValue = options.stationReference;
+    } else if (options.parameter) {
+      this.selectionType = 'parameter';
+      this.selectionValue = options.parameter;
+    } else {
+      // Throw?
     }
 
     // Readings that can be measured for the selected stations.
@@ -104,10 +118,23 @@ class Readings {
   async getLatest(options = {}) {
     switch (this.selectionType) {
       case 'stationReference': {
-        const path = `/flood-monitoring/id/stations/${this.selectionValue}/readings`;
-        const params = { latest: '' };
+        console.log('Getting latest');
+        const path = '/flood-monitoring/data/readings';
+        const params = { latest: '', stationReference: this.selectionValue };
         const response = await (options.request || request)({ path, params });
-        this.latest = mapLatestStationMeasures(
+        this.latest = mapLatestMeasures(
+          response.data.items,
+          this.measures,
+          this.measuresMap
+        );
+        return options.response ? [this.latest, response] : this.latest;
+      } // end case stationReference
+
+      case 'parameter': {
+        const path = '/flood-monitoring/data/readings';
+        const params = { latest: '', parameter: this.selectionValue };
+        const response = await (options.request || request)({ path, params });
+        this.latest = mapLatestMeasures(
           response.data.items,
           this.measures,
           this.measuresMap
