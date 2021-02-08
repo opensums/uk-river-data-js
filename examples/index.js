@@ -1,9 +1,6 @@
-const { createStationReadings } = require('..');
+const { getLatest } = require('..').Station;
 
-const readings = createStationReadings('3400TH');
-
-readings.getLatest().then((latest) => {
-  console.log('Readings', readings);
+getLatest('3400TH').then(({ latest }) => {
   console.log('Latest', latest);
   // console.log('TimeSeries', readings.getTimeSeries());
 });

@@ -1,7 +1,8 @@
 // src/single-station-readings.js
 
-import { request } from './request';
-import { DAY, getTypeFromMeasure } from './helpers';
+import { request } from '../request';
+import { DAY } from '../helpers';
+import { parseMeasureId } from './measure';
 
 // Map measure uris to friendly names.
 function mapLatestMeasures(data, measures, measuresMap) {
@@ -15,7 +16,7 @@ function mapMeasure(measure, measures, measuresMap) {
   // If the measure id has already been mapped, return it.
   if (measuresMap[measure]) return measuresMap[measure];
 
-  const type = getTypeFromMeasure(measure);
+  const { type } = parseMeasureId(measure);
   if (measures[type]) {
     measures[measure] = { id: measure };
     measuresMap[measure] = measure;
@@ -107,12 +108,18 @@ class Station {
 }
 
 /**
- * Create a Station object.
+ * Get a Station object with the latest readings.
  *
- * @param  {(string|object)} stationReference The station reference or an options object.
+ * @param  {string} stationReference The station reference.
  * @param  {object} [options = {}] Options.
- * @return {Station} An object for getting station readings.
+ * @return {Promise} A promise for a Station object with the latest readings.
  */
-export function createStation(stationReference, options = {}) {
-  return new Station(stationReference, options);
+async function getLatest(stationReference, options = {}) {
+  const station = new Station(stationReference, options);
+  await station.getLatest(options);
+  return station;
 }
+
+export default {
+  getLatest,
+};

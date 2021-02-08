@@ -1,20 +1,22 @@
-import { createStation } from '../../dist/cjs';
+// test/functional/models.station.test.js
 
-let latest;
+import { Station } from '../../dist/cjs';
 
-async function getLatest(readings) {
-  if (!latest) {
-    latest = await readings.getLatest();
+const { getLatest } = Station;
+
+let station;
+
+async function getLatestCached() {
+  if (!station) {
+    station = await getLatest('3400TH');
   }
-  return latest;
+  return station;
 }
 
 describe('An object created by createCurrentReadings', () => {
   describe('the latest readings for a station', () => {
-    const readings = createStation('3400TH');
-
     it('should be more than 1m and 50cumecs', async () => {
-      const latest = await getLatest(readings);
+      const { latest } = await getLatestCached();
       expect(latest.level[1]).toBeGreaterThan(1);
       expect(latest.flow[1]).toBeGreaterThan(50);
       // Timestamps should be equal.
@@ -22,16 +24,11 @@ describe('An object created by createCurrentReadings', () => {
     });
 
     it('should have equal timestamps within the last 4 hours', async () => {
-      const latest = await getLatest(readings);
+      const { latest } = await getLatestCached();
       expect(latest.flow[0]).toBe(latest.level[0]);
       const lag = Date.now() - new Date(latest.flow[0]).valueOf();
       expect(lag).toBeGreaterThan(0);
       expect(lag).toBeLessThan(14400000);
-    });
-
-    test('getLatest() should return a reference to readings.latest', async () => {
-      const latest = await getLatest(readings);
-      expect(latest).toBe(readings.latest);
     });
   });
 });

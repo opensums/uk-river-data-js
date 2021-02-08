@@ -1,7 +1,7 @@
 // src/readings.js
 
 import { request } from './request';
-import { DAY, getTypeFromMeasure } from './helpers';
+import { DAY } from './helpers';
 
 /*
 "@id" : "http://environment.data.gov.uk/flood-monitoring/data/readings/F1906-flow-logged-i-15_min-m3_s/2021-02-07T22-30-00Z" ,
@@ -10,15 +10,17 @@ import { DAY, getTypeFromMeasure } from './helpers';
 "value" : 12.146
 */
 
+/*
 function parseReadingsId(id) {
   // /F1906-flow-logged-i-15_min-m3_s/2021-02-07T22-30-00Z
   const [dateTime, measureId] = id.split('/').reverse();
   const [stationReference, parameter, thing, period, interval, unit] = measureId.split('-');
   return {dateTime, stationReference, parameter, thing, period, interval, unit};
 }
+*/
 
 // Map measure uris to friendly names.
-function mapLatestMeasures(data, measures, measuresMap) {
+function mapLatestMeasures(data, measures, measuresMap, stationReference) {
   const obj = {};
   obj[stationReference] = {};
   return data.reduce((mapped, { dateTime, measure, value }) => {
@@ -34,7 +36,7 @@ function mapMeasure(measure, measures, measuresMap) {
   // If the measure id has already been mapped, return it.
   if (measuresMap[measure]) return measuresMap[measure];
 
-  const type = getTypeFromMeasure(measure);
+  const type = null; // getTypeFromMeasure(measure);
   if (measures[type]) {
     measures[measure] = { id: measure };
     measuresMap[measure] = measure;
