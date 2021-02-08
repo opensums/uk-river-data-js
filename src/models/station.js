@@ -1,4 +1,4 @@
-// src/single-station-readings.js
+// src/models.station.js
 
 import { request } from '../request';
 import { DAY } from '../helpers';
@@ -89,10 +89,14 @@ class Station {
   }
 
   async getLatest(options = {}) {
+    // Configure a request.
+    const path = `/flood-monitoring/id/stations/${this.stationReference}/readings`;
+    const params = { latest: '' };
+    // Get the response, using an optional request method if provided.
+    const response = await (options.request || request)({ path, params });
+
+    // Map the received items.
     try {
-      const path = `/flood-monitoring/id/stations/${this.stationReference}/readings`;
-      const params = { latest: '' };
-      const response = await (options.request || request)({ path, params });
       this.latest = mapLatestMeasures(
         response.data.items,
         this.measures,
@@ -100,8 +104,9 @@ class Station {
       );
       return options.response ? [this.latest, response] : this.latest;
     } catch (err) {
-      const e = new Error('Error requesting readings');
+      const e = new Error('Error processing response');
       e.error = err;
+      e.response = response;
       throw e;
     }
   }
@@ -116,6 +121,10 @@ class Station {
  */
 async function getLatest(stationReference, options = {}) {
   const station = new Station(stationReference, options);
+  if (options.response) {
+    const [, response] = await station.getLatest(options);
+    return [station, response];
+  }
   await station.getLatest(options);
   return station;
 }

@@ -35,6 +35,72 @@
 
     <!-- Vue application template -->
     <div class="template" id="app-template">
+      <div class="row">
+        <div class="col-lg-6">
+          <!-- Station selection panel -->
+          <div class="card mb-3">
+            <h3 class="card-header">Select station</h3>
+            <div class="card-body">
+              For temperature try 3680, 3275, 3307, 3014, 3901, 1412 wind
+              720763, 50181, 694670, 46131, 46132, 753137
+              teddington 3401TH richmond 0009
+              <div class="form-group row">
+                <label
+                  for="inputStationReference"
+                  class="col-sm-2 col-form-label"
+                  >Station</label
+                >
+                <div class="col-sm-10">
+                  <input
+                    class="form-control"
+                    id="inputStationReference"
+                    placeholder="e.g. 3400TH"
+                    v-model="stationReference"
+                  />
+                </div>
+              </div>
+            </div>
+            <!-- /.card-body -->
+            <div class="card-footer">
+              <button class="btn btn-secondary" @click="stationGetLatestStatic">
+                Load latest data
+              </button>
+              </button>
+            </div>
+          </div>
+          <!-- /.card -->
+        </div>
+
+        <div class="col-lg-6">
+          <!-- Station panel -->
+          <div class="card mb-3">
+            <h3 class="card-header">Station</h3>
+            <div v-if="station" class="card-body">
+              <!-- Latest readings -->
+              <div v-if="station.latest">
+                Latest readings
+                <div
+                  v-for="[name, [ time, value]] in Object.entries(station.latest)"
+                  class="row text-center"
+                >
+                  <div class="col-sm-4">{{ name }}</div>
+                  <div class="col-sm-2">{{ value }}</div>
+                  <div class="col-sm-6"><small>@{{ time }}</small></div>
+                </div>
+              </div>
+              {{ station }}
+            </div>
+            <!-- /.card-body -->
+            <div class="card-footer">
+              <button class="btn btn-secondary" @click="stationGetLatest">
+                Load latest data
+              </button>
+            </div>
+          </div>
+          <!-- /.card -->
+        </div>
+      </div>
+
       <div>
         <button class="btn btn-secondary" @click="loadLatest">
           Load latest data
@@ -47,14 +113,6 @@
         </button>
 
         <canvas ref="chartCanvas" style="height: 400px"></canvas>
-
-        <div v-if="station && station.latest">
-          <h3>Latest</h3>
-          <p>
-            Level {{ station.latest.level[1] }} @{{ station.latest.level[0] }}
-          </p>
-          <p>Flow {{ station.latest.flow[1] }} @{{ station.latest.flow[0] }}</p>
-        </div>
 
         <h3>Flow</h3>
         <ul class="list-group">
@@ -96,13 +154,13 @@
 
     <!-- Vue application -->
     <script>
-      const { createReadings, createStation } = UkRiverData;
+      const { Station } = UkRiverData;
       Vue.createApp({
         template: '#app-template',
         data() {
           return {
             chartIsLoaded: false,
-            stationReference: '3400TH',
+            stationReference: null,
             version: UkRiverData.version,
             readings: null,
             station: null,
@@ -126,20 +184,20 @@
           },
         },
 
-        mounted() {
-          if (this.stationReference) {
-            this.station = createStation(this.stationReference);
-          }
-        },
+        mounted() {},
 
         methods: {
+          async stationGetLatest() {
+            this.station.getLatest();
+          },
+
+          async stationGetLatestStatic() {
+            this.station = await Station.getLatest(this.stationReference);
+          },
+
           async loadCurrent() {
             await this.station.getSince();
             this.loadChart();
-          },
-
-          async loadLatest() {
-            return this.station.getLatest();
           },
 
           async loadLatestFlow() {

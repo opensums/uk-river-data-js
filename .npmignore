@@ -8,3 +8,5 @@
 
 # Don't lock versions for a library.
 package-lock.json
+
+/coverage/

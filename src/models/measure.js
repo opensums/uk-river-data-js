@@ -6,6 +6,10 @@ const types = {
   'level-stage': 'level',
   'level-downstage': 'downstreamLevel',
   'level-tidal_level': 'tideLevel',
+  'rainfall-tipping_bucket_raingauge': 'rainfall',
+  'temperature-dry_bulb': 'temperature',
+  'wind-speed': 'windSpeed',
+  'wind-direction': 'windDirection',
 };
 
 // Pre-compile this regular expression.

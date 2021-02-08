@@ -9,7 +9,7 @@ async function getLatest(readings) {
   return latest;
 }
 
-describe('An object created by createCurrentReadings', () => {
+describe.skip('An object created by createCurrentReadings', () => {
   describe('the latest readings for a station', () => {
     const readings = createReadings({ stationReference: '3400TH' });
 
